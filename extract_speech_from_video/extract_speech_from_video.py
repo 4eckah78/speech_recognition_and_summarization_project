@@ -21,5 +21,21 @@ def get_text_from_video(path_to_video):
     print(text)
     return text
 
+
+def get_text_from_audio(path_to_audio):
+    '''
+    function takes only .wav audio files!!
+    '''
+
+    r = sr.Recognizer()
+
+    with sr.AudioFile(path_to_audio) as source:
+        data = r.record(source)
+
+    text = r.recognize_google(data, language="ru-RU")
+
+    print(text)
+    return text
+
 if __name__ == "__main__":
     result = get_text_from_video("russian_video2.mp4")
