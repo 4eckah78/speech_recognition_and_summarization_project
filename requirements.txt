@@ -13,3 +13,8 @@ requests==2.31.0
 SpeechRecognition==3.10.0
 tqdm==4.66.1
 urllib3==2.1.0
+pytelegrambotapi==4.14.0
+transformers==4.35.2
+torch==2.1.1
+sentencepiece==0.1.99
+pydub==0.25.1
