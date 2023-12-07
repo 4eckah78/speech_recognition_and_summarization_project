@@ -49,7 +49,8 @@ def summarization(text, n_words=None, compression=None,
       result = result + tokenizer.decode(out[0], skip_special_tokens=True) + ' '        
     
     return result
-global text_from_video
+
+global text_to_send
 bot = telebot.TeleBot("TOKEN")
 
 @bot.message_handler(content_types=['text'])
@@ -62,9 +63,9 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, "Привет, я умный бот! Я умею преобразовывать видео и аудио в текст! \nОтправь мне видео (mp4) или аудио (mp3) файл не более 20Мб и я отправлю тебе его текстовую версию. \nТакже ты можешь отправить мне ссылку на видео с ютуба, и я его тоже транскрибирую :)")
     elif "https://www.youtube.com" in message.text:
         download_video(message.text)
-        global text_from_video
-        text_from_video = get_text_from_video("youtube_video.mp4")
-        bot.send_message(message.from_user.id, text_from_video)
+        global text_to_send
+        text_to_send = get_text_from_video("youtube_video.mp4")
+        bot.send_message(message.from_user.id, text_to_send)
         ask_if_need_summarization(message)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")    
@@ -82,7 +83,7 @@ def ask_if_need_summarization(message):
 def callback_worker(call):
     if call.data == "yes":
         bot.send_message(call.message.chat.id, 'Сейчас сделаю')
-        bot.send_message(call.message.chat.id, summarization(text_from_video))
+        bot.send_message(call.message.chat.id, summarization(text_to_send))
     elif call.data == "no":
         bot.send_message(call.message.chat.id, 'Хорошо, нет так нет :)')
 
@@ -92,11 +93,13 @@ def get_audio_message(message):
     file_id = message.audio.file_id
     downloading_file = bot.get_file(file_id)
     downloaded_file = bot.download_file(downloading_file.file_path)
-    with open("audio.wav", "wb") as file:
+    with open("audio.mp3", "wb") as file:
         file.write(downloaded_file)
     file.close()
-    text = get_text_from_audio("audio.wav")
-    print(text)
+    global text_to_send
+    text_to_send = get_text_from_audio("audio.mp3")
+    bot.send_message(message.from_user.id, text_to_send)
+    ask_if_need_summarization(message)
 
 @bot.message_handler(content_types=["video"])
 def get_video_message(message):
@@ -106,9 +109,9 @@ def get_video_message(message):
     with open("video.mp4", "wb") as file:
         file.write(downloaded_file)
     file.close()
-    global text_from_video
-    text_from_video = get_text_from_video("video.mp4")
-    bot.send_message(message.from_user.id, text_from_video)
+    global text_to_send
+    text_to_send = get_text_from_video("video.mp4")
+    bot.send_message(message.from_user.id, text_to_send)
     ask_if_need_summarization(message)
 
 
@@ -120,21 +123,21 @@ def get_video_message(message):
     with open("video.mp4", "wb") as file:
         file.write(downloaded_file)
     file.close()
-    global text_from_video
-    text_from_video = get_text_from_video("video.mp4")
-    bot.send_message(message.from_user.id, text_from_video)
+    global text_to_send
+    text_to_send = get_text_from_video("video.mp4")
+    bot.send_message(message.from_user.id, text_to_send)
     ask_if_need_summarization(message)
 
 
-@bot.message_handler(content_types=["voice"])
-def get_video_message(message):
-    file_id = message.voice.file_id
-    downloading_file = bot.get_file(file_id)
-    downloaded_file = bot.download_file(downloading_file.file_path)
-    with open("audio.wav", "wb") as file:
-        file.write(downloaded_file)
-    file.close()
-    text = get_text_from_audio("audio.wav")
-    print(text)
+# @bot.message_handler(content_types=["voice"]) # ПРОБЛЕМЫ
+# def get_video_message(message):
+#     file_id = message.voice.file_id
+#     downloading_file = bot.get_file(file_id)
+#     downloaded_file = bot.download_file(downloading_file.file_path)
+#     with open("audio.mp3", "wb") as file:
+#         file.write(downloaded_file)
+#     file.close()
+#     text = get_text_from_audio("audio.mp3")
+#     print(text)
 
 bot.polling(non_stop=True, interval=0) 
